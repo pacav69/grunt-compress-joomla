@@ -1,4 +1,4 @@
-# grunt-compress-joomla
+# grunt-compress-joomla [![Build Status](https://travis-ci.org/renekorss/grunt-compress-joomla.svg?branch=master)](https://travis-ci.org/renekorss/grunt-compress-joomla)
 
 > Compresses Joomla! extensions
 
@@ -17,7 +17,7 @@ Once the plugin has been installed, it may be enabled inside your Gruntfile with
 grunt.loadNpmTasks('grunt-compress-joomla');
 ```
 
-## The "compress_joomla" task
+## Compress task
 
 ### Overview
 In your project's Gruntfile, add a section named `compress_joomla` to the data object passed into `grunt.initConfig()`.
@@ -35,19 +35,81 @@ grunt.initConfig({
 });
 ```
 
+### Extension data
+
+#### extensionName
+Type: `String`
+
+This must be folder name of extension. For example `com_example` for `component`.
+
+#### extensionType
+Type: `String`
+
+Automatically detected from `extensionName` (supported: `component`, `module`, `plugin`). Can be overridden and is required for `template` and `language`.
+
+Possible values: `component`, `module`, `plugin`, `template` and `language`.
+
 ### Options
 
-#### options.separator
+You can use all [grunt-contrib-compress options](https://github.com/gruntjs/grunt-contrib-compress).
+
+#### archive
+Type: `String` or `Function`
+Modes: `zip` `tar`
+
+This is used to define where to output the archive. Each target can only have one output file.
+If the type is a Function it must return a String.
+
+*This option is only appropriate for many-files-to-one compression modes like zip and tar.  For gzip for example, please use grunt's standard src/dest specifications.*
+
+#### mode
 Type: `String`
-Default value: `',  '`
 
-A string value that is used to do something with whatever.
+This is used to define which mode to use, currently supports `gzip`, `deflate`, `deflateRaw`, `tar`, `tgz` (tar gzip) and `zip`.
 
-#### options.punctuation
+Automatically detected per dest:src pair, but can be overridden per target if desired.
+
+#### level
+Type: `Integer`
+Modes: `zip` `gzip`
+Default: 1
+
+Sets the level of archive compression.
+
+#### pretty
+Type: `Boolean`
+Default: `false`
+
+Pretty print file sizes when logging.
+
+### File Data
+
+The following additonal keys may be passed as part of a dest:src pair when using an Archiver-backed format.
+All keys can be defined as a `Function` that receives the file name and returns in the type specified below.
+
+#### date
+Type: `Date`
+Modes: `zip` `tar` `tgz`
+
+Sets the file date.
+
+#### mode
+Type: `Integer`
+Modes: `zip` `tar` `tgz`
+
+Sets the file permissions.
+
+#### store
+Type: `Boolean`
+Modes: `zip`
+
+If true, file contents will be archived without compression.
+
+#### comment
 Type: `String`
-Default value: `'.'`
+Modes: `zip`
 
-A string value that is used to do something else with whatever else.
+Sets the file comment.
 
 ### Usage Examples
 
@@ -57,10 +119,11 @@ In this example, the default options are used to do something with whatever. So 
 ```js
 grunt.initConfig({
   compress_joomla: {
-    options: {},
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
+    options: {
+
     },
+    extensionName: 'com_example',
+    extensionType: 'component',
   },
 });
 ```
@@ -72,12 +135,11 @@ In this example, custom options are used to do something else with whatever else
 grunt.initConfig({
   compress_joomla: {
     options: {
-      separator: ': ',
+      mode: 'zip',
       punctuation: ' !!!',
     },
-    files: {
-      'dest/default_options': ['src/testing', 'src/123'],
-    },
+    extensionName: 'com_example',
+    extensionType: 'component',
   },
 });
 ```

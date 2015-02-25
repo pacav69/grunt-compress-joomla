@@ -8,43 +8,31 @@
 
 'use strict';
 
-module.exports = function(grunt) {
+var _ = require('lodash');
 
-  // Please see the Grunt documentation for more information regarding task
-  // creation: http://gruntjs.com/creating-tasks
+module.exports = function(grunt) {
+  var compressJoomla = require('./lib/compress_joomla')(grunt);
 
   grunt.registerMultiTask('compress_joomla', 'Compresses Joomla! extensions', function() {
-    // Merge task-specific and/or target-specific options with these defaults.
-    var options = this.options({
-      punctuation: '.',
-      separator: ', '
+    compressJoomla.options = this.options({
+      
     });
 
-    // Iterate over all specified file groups.
-    this.files.forEach(function(f) {
-      // Concat specified files.
-      var src = f.src.filter(function(filepath) {
-        // Warn on and remove invalid source files (if nonull was set).
-        if (!grunt.file.exists(filepath)) {
-          grunt.log.warn('Source file "' + filepath + '" not found.');
-          return false;
-        } else {
-          return true;
-        }
-      }).map(function(filepath) {
-        // Read file source.
-        return grunt.file.read(filepath);
-      }).join(grunt.util.normalizelf(options.separator));
+    // Get extension type, if not set, detect automatically from extension name
+    this.extensionType = this.extensionType || compressJoomla.autoDetectExtensionType(this.extensionName);
 
-      // Handle options.
-      src += options.punctuation;
+    // Check for extension name
+    if (String(this.extensionName).length === 0) {
+      grunt.fail.fatal('Extension name is required.');
+    }
 
-      // Write the destination file.
-      grunt.file.write(f.dest, src);
+    // Check for correct extension type
+    // Possible extension types: 'component', 'module', 'plugin', 'template', 'language'
+    if (_.includes(['component'], this.extensionType) === false) {
+      grunt.fail.warn('Extension type ' + String(this.extensionType).cyan + ' not supported.');
+    }
 
-      // Print a success message.
-      grunt.log.writeln('File "' + f.dest + '" created.');
-    });
+    // Compress extension
+    compressJoomla[this.extensionType](this.async());
   });
-
 };
